@@ -1,5 +1,6 @@
 /*
-IBM model for NC cells coupled to reaction-diffusion model for chemoattractant on a spatially non-uniformly growing domain, model described in SI McKinney et al. (2019).
+IBM model for NC cells coupled to reaction-diffusion model for chemoattractant on a spatially non-uniformly growing domain,
+ model described in SI McKinney et al. (2019).
 
 *********************  MATLAB TDR SYSTEM  ************************************
 * Date created  : 2018, Jul 31
@@ -16,14 +17,7 @@ IBM model for NC cells coupled to reaction-diffusion model for chemoattractant o
 
 
 #include "Aboria.h"
-#include <random>
-#include <map>
 #include <Eigen/Core>
-#include <algorithm> // std::unique_copy
-#include <iostream>// writing on a text file
-#include <fstream>
-#include <math.h>
-#include <assert.h>
 
 using namespace std;
 using namespace Aboria;
@@ -34,12 +28,14 @@ using namespace Eigen; // objects VectorXd, MatrixXd
 
 VectorXi proportions(double diff_conc, int n_seed) {
 
- // model parameters
+    // model parameters
 
 
 
 
-    bool first_part_grows = true; // an example with one part of the domain growing faster than the other part, this is necessary for domain growth parameter estimation. True if the first part of the domain grows faster, false if final part grows faster
+    bool first_part_grows = true; // an example with one part of the domain growing faster than the other part,
+    // this is necessary for domain growth parameter estimation. True if the first part of the domain grows faster, false
+    // if final part grows faster
 
 
     double space_grid_controller = 100.0;
@@ -48,7 +44,8 @@ VectorXi proportions(double diff_conc, int n_seed) {
     int length_x = int(domain_length * space_grid_controller); // length in x direction of the chemoattractant matrix
     double initial_domain_length = domain_length;
     const int length_y = int(1.2 * space_grid_controller); // length in y direction of the chemoattractant matrix
-    const double final_time = 54; // number of timesteps, 1min - 0.05, now dt =0.01, for 18 hrss we have 54. (The cells enter domain at t=6 hrs,so they travel for 18 hrs untill t= 24hrs)
+    const double final_time = 54; // number of timesteps, 1min - 0.05, now dt =0.01, for 18 hrss we have 54. (The cells
+    // enter domain at t=6 hrs,so they travel for 18 hrs untill t= 24hrs)
     double final_length = 1014; // final length of the domain
 
 // parameters for the dynamics of chemoattractant concentration
@@ -111,32 +108,32 @@ VectorXi proportions(double diff_conc, int n_seed) {
 
     //check whether first part grows
     double thetasmalltemp = thetasmall;
-    if (first_part_grows ==true){
-        double xvar = final_length/ (n_faster * double(length_x)*thetasmalltemp + double(length_x)*(1-thetasmalltemp)); // solve: 2 *xvar * length_x * thetasmall + x * length(1-thetasmall) = final_length
+    if (first_part_grows == true) {
+        double xvar = final_length / (n_faster * double(length_x) * thetasmalltemp + double(length_x) * (1 -
+                                                                                                         thetasmalltemp));
+        // solve: 2 *xvar * length_x * thetasmall + x * length(1-thetasmall) = final_length
 
-        double ratio1 = n_faster * double(length_x)*thetasmalltemp * xvar / (double(length_x)*thetasmalltemp);
+        double ratio1 = n_faster * double(length_x) * thetasmalltemp * xvar / (double(length_x) * thetasmalltemp);
 
-        alpha1 = log (ratio1)/final_time;
+        alpha1 = log(ratio1) / final_time;
 
-        double ratio2 =  double(length_x)*(1- thetasmalltemp) * xvar / (double(length_x)*(1- thetasmalltemp));
+        double ratio2 = double(length_x) * (1 - thetasmalltemp) * xvar / (double(length_x) * (1 - thetasmalltemp));
 
-        alpha2 = log (ratio2)/final_time;
+        alpha2 = log(ratio2) / final_time;
 
+    } else if (first_part_grows == false) {
+        double xvar = final_length / (double(length_x) * thetasmall + n_faster * double(length_x) * (1 -
+                                                                                                     thetasmall));
+        // solve: 2 *xvar * length_x * thetasmall + x * length(1-thetasmall) = final_length
+
+        double ratio1 = double(length_x) * thetasmall * xvar / (double(length_x) * thetasmall);
+
+        alpha1 = log(ratio1) / final_time;
+
+        double ratio2 = double(length_x) * (1 - thetasmall) * xvar * n_faster / (double(length_x) * (1 - thetasmall));
+
+        alpha2 = log(ratio2) / final_time;
     }
-
-    else if(first_part_grows == false){
-        double xvar = final_length/ (double(length_x)*thetasmall + n_faster*double(length_x)*(1-thetasmall)); // solve: 2 *xvar * length_x * thetasmall + x * length(1-thetasmall) = final_length
-
-        double ratio1 = double(length_x)*thetasmall * xvar / (double(length_x)*thetasmall);
-
-        alpha1 = log (ratio1)/final_time;
-
-        double ratio2 =  double(length_x)*(1- thetasmall) * xvar*n_faster / (double(length_x)*(1- thetasmall));
-
-        alpha2 = log (ratio2)/final_time;
-    }
-
-
 
 
     VectorXd strain = VectorXd::Zero(length_x);
@@ -203,7 +200,8 @@ VectorXi proportions(double diff_conc, int n_seed) {
     // form a matrix which would store x,y,z,u
 
     MatrixXd chemo_3col(length_x * length_y, 4), chemo_3col_ind(length_x * length_y,
-                                                                2); // need for because that is how paraview accepts data, third dimension is just zeros
+                                                                2); // need for because that is how paraview accepts data,
+    // third dimension is just zeros
 
     // x, y coord, 1st and 2nd columns respectively
     int k = 0;
@@ -256,17 +254,20 @@ VectorXi proportions(double diff_conc, int n_seed) {
     ABORIA_VARIABLE(radius, double, "radius")
     ABORIA_VARIABLE(direction, vdouble2, "direction")// stores the direction a particle moved
     ABORIA_VARIABLE(persistence_extent, int,
-                    "persistence extent")// stores whether cell moves only one step in current direction or in a process of moving persistently
+                    "persistence extent")// stores whether cell moves only one step in current direction or in a process
+    // of moving persistently
     ABORIA_VARIABLE(same_dir_step, int,
                     "same dir step")// the number which stores how many steps in the same direction are made.
     ABORIA_VARIABLE(attached_to_id, int, "attached_to_id")
     ABORIA_VARIABLE(type, int, "type") // 0 if a cell is a leader, 1 if follower
     ABORIA_VARIABLE(chain_type, int, "chain_type") // leaders form different chain types
     ABORIA_VARIABLE(chain, int, "chain") // stores whether a follower is part of the chain or no, 0 if it is not part of
-    ABORIA_VARIABLE(scaling, int, "scaling ") // stores the value that the cell position is scaled down to initial coordinates
+    ABORIA_VARIABLE(scaling, int,
+                    "scaling ") // stores the value that the cell position is scaled down to initial coordinates
     // the chain and then increasing integer if it is. If it is attached to a leader, it is 1, and then increasing order.
     // stores the distance to the closest neighbour, if less than thresold
-    typedef Particles<std::tuple<radius, type, attached_to_id, direction, chain, chain_type, persistence_extent, same_dir_step,scaling>, 2> particle_type; // 2 stands for dimension
+    typedef Particles<std::tuple<radius, type, attached_to_id, direction, chain, chain_type, persistence_extent, same_dir_step, scaling>, 2> particle_type;
+    // 2 stands for dimension
 
     // will use stored value of the position of a particle
     typedef particle_type::position position;
@@ -316,7 +317,7 @@ VectorXi proportions(double diff_conc, int n_seed) {
 
 
     //for each timestep
-    while (t < final_time){
+    while (t < final_time) {
 
 
 
@@ -357,7 +358,6 @@ VectorXi proportions(double diff_conc, int n_seed) {
         particles.update_positions();
 
 
-
         t = t + dt;
 
         counter = counter + 1;
@@ -385,9 +385,9 @@ VectorXi proportions(double diff_conc, int n_seed) {
         Gamma(0) = 0; // this is assumption, since I cannot calculate it
         //cout << "Gamma(0) " << 0 << " value " << Gamma(0) << endl;
 
-        for (int i = 1; i < length_x;i++){
+        for (int i = 1; i < length_x; i++) {
 
-            Gamma(i) = Gamma_x(i) * dx + Gamma(i-1);
+            Gamma(i) = Gamma_x(i) * dx + Gamma(i - 1);
 
             //   cout << "Gamma(i) " << i << " value " << Gamma(i) << endl;
         }
@@ -406,7 +406,7 @@ VectorXi proportions(double diff_conc, int n_seed) {
         /// update positions uniformly based on the domain growth
 
         vdouble2 x; // use variable x for the position of cells
-        double x0=0;
+        double x0 = 0;
         int pos;
 
         for (int i = 0; i < particles.size(); i++) {
@@ -417,9 +417,9 @@ VectorXi proportions(double diff_conc, int n_seed) {
 
 
             int j = 0;
-            while (x[0]> Gamma_old(j)){
+            while (x[0] > Gamma_old(j)) {
                 value = j;
-                j = j+1;
+                j = j + 1;
                 //cout << "value " << value << endl;
 
             }
@@ -429,8 +429,7 @@ VectorXi proportions(double diff_conc, int n_seed) {
 
 //            x[0] = x[0] + Gamma(value)-Gamma_old(value);
 
-            get<position>(particles)[i] += vdouble2(Gamma(value)-Gamma_old(value),0);
-
+            get<position>(particles)[i] += vdouble2(Gamma(value) - Gamma_old(value), 0);
 
 
         }
@@ -483,8 +482,6 @@ VectorXi proportions(double diff_conc, int n_seed) {
                                   chemo(i, j);
             }
         }
-
-
 
 
         for (int i = 0; i < length_y; i++) {
@@ -585,7 +582,8 @@ VectorXi proportions(double diff_conc, int n_seed) {
 
 
                 x_in = get<scaling>(particles)[particle_id(j)];
-                l_filo_x = l_filo_x_in *get<scaling>(particles)[particle_id(j)]/ Gamma(get<scaling>(particles)[particle_id(j)]);
+                l_filo_x = l_filo_x_in * get<scaling>(particles)[particle_id(j)] /
+                           Gamma(get<scaling>(particles)[particle_id(j)]);
 
 
                 // if it is still in the process of moving in the same direction
@@ -609,7 +607,8 @@ VectorXi proportions(double diff_conc, int n_seed) {
                                 get<direction>(particles)[particle_id(j)];
                     }
                     get<same_dir_step>(particles)[particle_id(
-                            j)] += 1; // add regardless whether the step happened or no to that count of the number of movement in the same direction
+                            j)] += 1; // add regardless whether the step happened or no to that count of the number of
+                    // movement in the same direction
 
                 }
 
@@ -670,7 +669,8 @@ VectorXi proportions(double diff_conc, int n_seed) {
                         }
                     }
 
-                    // if the concentration in a new place is relatively higher than the old one (diff_conc determines that threshold), move that way
+                    // if the concentration in a new place is relatively higher than the old one (diff_conc determines
+                    // that threshold), move that way
                     if ((new_chemo[chemo_max_number] - old_chemo) / sqrt(old_chemo) > diff_conc) {
 
                         count_dir += 1;
@@ -696,7 +696,8 @@ VectorXi proportions(double diff_conc, int n_seed) {
                             (x[1]) < length_y - 1 - cell_radius) {
                             get<position>(particles)[particle_id(j)] +=
                                     speed_l * vdouble2(sin(random_angle[chemo_max_number]),
-                                                       cos(random_angle[chemo_max_number])); // update if nothing is in the next position
+                                                       cos(random_angle[chemo_max_number])); // update if nothing is in
+                            // the next position
                             get<direction>(particles)[particle_id(j)] =
                                     speed_l * vdouble2(sin(random_angle[chemo_max_number]),
                                                        cos(random_angle[chemo_max_number]));
@@ -718,7 +719,6 @@ VectorXi proportions(double diff_conc, int n_seed) {
 
 
                         x += speed_l * vdouble2(sin(random_angle[filo_number]), cos(random_angle[filo_number]));
-
 
 
                         bool free_position = true; // check if the neighbouring position is free
@@ -778,7 +778,8 @@ VectorXi proportions(double diff_conc, int n_seed) {
 
 
                 x_in = get<scaling>(particles)[j];
-                l_filo_x = l_filo_x_in *get<scaling>(particles)[particle_id(j)]/ Gamma(get<scaling>(particles)[particle_id(j)]);
+                l_filo_x = l_filo_x_in * get<scaling>(particles)[particle_id(j)] /
+                           Gamma(get<scaling>(particles)[particle_id(j)]);
 
                 // if the particle is part of the chain
                 if (get<chain>(particles[particle_id(j)]) > 0) {
@@ -875,7 +876,7 @@ VectorXi proportions(double diff_conc, int n_seed) {
 
                                 if (get<id>(*k) != get<id>(particles[particle_id(j)])) {
                                     //check if there is a leader in front of the chain
-                                                                        get<direction>(particles)[particle_id(j)] = get<direction>(*k);
+                                    get<direction>(particles)[particle_id(j)] = get<direction>(*k);
                                     get<chain>(particles)[particle_id(j)] =
                                             get<chain>(*k) + 1; // it is subsequent member of the chain
                                     get<attached_to_id>(particles)[particle_id(j)] = get<id>(
@@ -930,7 +931,7 @@ VectorXi proportions(double diff_conc, int n_seed) {
                     }
 
 
-                         // if it hasn't found anything close, move randomly
+                    // if it hasn't found anything close, move randomly
 
                     if (get<chain>(particles[particle_id(j)]) == 0) {
 
@@ -955,7 +956,8 @@ VectorXi proportions(double diff_conc, int n_seed) {
                         if (free_position && x[0] > cell_radius && x[0] < Gamma(length_x - 1) && (x[1]) > cell_radius &&
                             (x[1]) < length_y - 1 - cell_radius) {
                             get<position>(particles)[particle_id(j)] += speed_f * vdouble2(sin(random_angle),
-                                                                                           cos(random_angle)); // update if nothing is in the next position
+                                                                                           cos(random_angle)); // update
+                            // if nothing is in the next position
                             get<direction>(particles)[particle_id(j)] = speed_f * vdouble2(sin(random_angle),
                                                                                            cos(random_angle)); // update direction as well
                         }
@@ -1038,18 +1040,17 @@ VectorXi proportions(double diff_conc, int n_seed) {
         if (counter % 100 == 0) {
 
 
-           // save cell positions
+            // save cell positions
 
-        #ifdef HAVE_VTK
+#ifdef HAVE_VTK
             vtkWriteGrid("Cells", t, particles.get_grid(true));
-        #endif
+#endif
 
-        // save chemoattractant concentration
+            // save chemoattractant concentration
             ofstream output("ChemoConc" + to_string(int(t)) + ".csv");
 
 
             output << "x, y, z, u" << "\n" << endl;
-
 
 
             for (int i = 0; i < length_x * length_y; i++) {
@@ -1071,7 +1072,8 @@ VectorXi proportions(double diff_conc, int n_seed) {
     const int domain_partition = int(Gamma(length_x - 1) / double(55));; // number of intervals of 50 \mu m
 
 
-    VectorXi proportions = VectorXi::Zero(domain_partition); // integer with number of cells in particular part that plus one is proportions that are not in chains
+    VectorXi proportions = VectorXi::Zero(
+            domain_partition); // integer with number of cells in particular part that plus one is proportions that are not in chains
 
     double one_part = Gamma(length_x - 1) / double(domain_partition);
 
@@ -1092,15 +1094,15 @@ VectorXi proportions(double diff_conc, int n_seed) {
 
     int followers_not_in_chain = 0;
 
-    for (int i = 0; i < particles.size(); ++i){
-        if (get<chain>(particles[i]) == 0){
-            if (get<type>(particles[i]) == 1){
+    for (int i = 0; i < particles.size(); ++i) {
+        if (get<chain>(particles[i]) == 0) {
+            if (get<type>(particles[i]) == 1) {
                 followers_not_in_chain += 1; // add to coung
             }
         }
     }
 
-    pro_break = double(followers_not_in_chain)/(double(particles.size()-N));
+    pro_break = double(followers_not_in_chain) / (double(particles.size() - N));
 
     return proportions;
 
@@ -1155,7 +1157,7 @@ int main() {
     * will store everything in one matrix, the entries will be summed over all simulations
     */
 
-   // comment up to last bracket
+    // comment up to last bracket
     ofstream output3("DensityOfCellsAlongTheDomain.csv");
 
 
